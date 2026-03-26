@@ -146,6 +146,23 @@ nav.scrolled{box-shadow:0 2px 20px rgba(0,0,0,0.06)}
 .about-strip-text p:last-of-type{margin-bottom:36px}
 .btn-white{display:inline-block;padding:13px 28px;background:#fff;color:var(--dark);font-size:12px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;text-decoration:none;border-radius:7px;transition:background 0.2s,color 0.2s}
 .btn-white:hover{background:var(--accent2);color:#fff}
+
+/* ── ORDER MODAL ── */
+.order-modal-overlay{display:none;position:fixed;inset:0;background:rgba(26,22,17,0.55);z-index:500;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(4px)}
+.order-modal-overlay.open{display:flex}
+.order-modal{background:#fff;border-radius:20px;padding:44px 48px;width:100%;max-width:480px;box-shadow:0 32px 80px rgba(0,0,0,0.2);position:relative}
+.order-modal-close{position:absolute;top:16px;right:20px;background:none;border:none;font-size:22px;color:var(--muted);cursor:pointer;line-height:1;padding:4px 8px}
+.order-modal-close:hover{color:var(--dark)}
+.order-modal h2{font-family:'Playfair Display',serif;font-size:26px;color:var(--dark);margin-bottom:6px}
+.order-modal .eyebrow{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--accent);margin-bottom:16px;display:block}
+.order-modal-divider{border:none;border-top:1px solid var(--border);margin:20px 0}
+.order-modal-hours{display:grid;grid-template-columns:auto 1fr;gap:6px 20px;margin-bottom:4px}
+.order-modal-hours .day{font-size:13px;font-weight:700;color:var(--dark)}
+.order-modal-hours .time{font-size:13px;color:var(--muted)}
+.order-modal-contact{display:flex;flex-direction:column;gap:10px;margin-top:4px}
+.order-modal-contact a{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;color:var(--dark);text-decoration:none;padding:12px 16px;background:var(--warm);border-radius:10px;transition:background .2s}
+.order-modal-contact a:hover{background:var(--border)}
+.order-modal-contact a svg{flex-shrink:0;width:18px;height:18px;stroke:var(--accent);stroke-width:2;fill:none}
 .about-strip-gallery{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .about-gallery-img{border-radius:12px;overflow:hidden}
 .about-gallery-img img{width:100%;aspect-ratio:3/4;object-fit:cover;display:block;transition:transform 0.4s}
@@ -260,7 +277,7 @@ footer{
     <li><a href="#about">About</a></li>
     <li><a href="#visit">Visit</a></li>
     <li><a href="#faq">FAQ</a></li>
-    <li><a href="https://merakisouq.square.site/s/order" class="nav-cta">Order Online</a></li>
+    <li><button onclick="openOrderModal()" class="nav-cta" style="cursor:pointer">Order Over Phone</button></li>
   </ul>
 </nav>
 
@@ -275,7 +292,7 @@ footer{
     </h1>
     <p class="hero-sub">Handmade hummus, shawarma, tabbouleh &amp; more — crafted with love from Sittie Maloof's recipes. Fresh, authentic, and made with care.</p>
     <div class="hero-btns">
-      <a href="https://merakisouq.square.site/s/order" class="btn-dark">Order Online</a>
+      <button onclick="openOrderModal()" class="btn-dark" style="cursor:pointer;border:none">Order Over Phone</button>
       <a href="#menu" class="btn-outline">View Menu</a>
     </div>
   </div>
@@ -548,7 +565,7 @@ footer{
 <section class="photo-scroll-section">
   <div class="photo-scroll-header">
     <h2>Fresh from our kitchen</h2>
-    <a href="https://merakisouq.square.site/s/order">Order Online →</a>
+    <button onclick="openOrderModal()" style="background:none;border:none;cursor:pointer;font-size:inherit;font-family:inherit;color:inherit;font-weight:inherit;padding:0">Order Over Phone →</button>
   </div>
   <div class="photo-track">
     <div class="photo-card">
@@ -617,7 +634,7 @@ footer{
     <h2>Come grab a plate at Meraki Souq</h2>
     <p>Meraki Souq is about simple pleasures — good food, warm space, and moments worth slowing down for. We'd love to see you.</p>
     <div class="visit-btns">
-      <a href="https://merakisouq.square.site/s/order" class="btn-dark">Order Online</a>
+      <button onclick="openOrderModal()" class="btn-dark" style="cursor:pointer;border:none">Order Over Phone</button>
       <a href="https://maps.google.com/?q=64+Toccoa+Ave+Suite+C+McCaysville+GA+30555" target="_blank" class="btn-outline">Google Maps</a>
     </div>
   </div>
@@ -666,7 +683,7 @@ footer{
     <div class="footer-col">
       <h4>Order</h4>
       <ul>
-        <li><a href="https://merakisouq.square.site/s/order">Order Online</a></li>
+        <li><a href="#" onclick="openOrderModal();return false;">Order Over Phone</a></li>
         <li><a href="#visit">Visit Us</a></li>
         <li><a href="tel:+17068510280">Call Us</a></li>
       </ul>
@@ -687,6 +704,34 @@ footer{
     </div>
   </div>
 </footer>
+
+<!-- ORDER MODAL -->
+<div class="order-modal-overlay" id="orderModal" onclick="if(event.target===this)closeOrderModal()">
+  <div class="order-modal">
+    <button class="order-modal-close" onclick="closeOrderModal()">✕</button>
+    <span class="eyebrow">Call to Order</span>
+    <h2>Order Over the Phone</h2>
+    <p style="font-size:14px;color:var(--muted);margin-bottom:0;line-height:1.7">Give us a call during business hours and we'll have your order ready for pickup.</p>
+    <hr class="order-modal-divider"/>
+    <p style="font-size:11px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Opening Hours</p>
+    <div class="order-modal-hours">
+      <span class="day">Mon</span><span class="time">11am – 2pm</span>
+      <span class="day">Tue – Sat</span><span class="time">11am – 5pm</span>
+      <span class="day">Sun</span><span class="time">11am – 2pm</span>
+    </div>
+    <hr class="order-modal-divider"/>
+    <div class="order-modal-contact">
+      <a href="tel:+17068510280">
+        <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 8.8 19.79 19.79 0 01.42 2.18 2 2 0 012 0h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 14v2.92z"/></svg>
+        (706) 851-0280
+      </a>
+      <a href="mailto:merakisouq2021@gmail.com">
+        <svg viewBox="0 0 24 24"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
+        merakisouq2021@gmail.com
+      </a>
+    </div>
+  </div>
+</div>
 
 <script>
 // ── SETTINGS APPLIER ──
@@ -767,6 +812,10 @@ footer{
   if(FT.instagramUrl)setHref('a[href*="instagram"]',FT.instagramUrl);
   setText('.footer-bottom span',FT.copyright);
 })();
+
+function openOrderModal(){document.getElementById('orderModal').classList.add('open');document.body.style.overflow='hidden';}
+function closeOrderModal(){document.getElementById('orderModal').classList.remove('open');document.body.style.overflow='';}
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeOrderModal();});
 
 // Nav scroll
 window.addEventListener('scroll', () => {
