@@ -137,16 +137,15 @@ a[href^="tel:"],a[href^="mailto:"]{color:inherit;text-decoration:none}
 .menu-panel.active{display:grid;grid-template-columns:1fr 1fr;gap:0}
 .menu-items{display:flex;flex-direction:column;gap:0}
 .menu-item{
-  display:flex;justify-content:space-between;align-items:flex-start;
-  padding:22px 0;border-bottom:1px solid var(--border);gap:20px;
+  padding:22px 0;border-bottom:1px solid var(--border);
 }
 .menu-item:last-child{border-bottom:none}
 .item-info{flex:1}
-.item-name-row{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:5px}
+.item-name-row{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:5px}
 .item-name{font-size:16px;font-weight:700;color:var(--dark)}
 .item-desc{font-size:13px;font-weight:300;color:var(--muted);line-height:1.6}
-.item-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);background:#fdf0e6;padding:3px 8px;border-radius:4px;flex-shrink:0}
-.item-price{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;color:var(--dark);flex-shrink:0;padding-top:1px}
+.item-tag{display:inline-block;margin-top:6px;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;color:var(--accent);background:#fdf0e6;padding:3px 8px;border-radius:4px}
+.item-price{font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:var(--muted);flex-shrink:0;text-align:right}
 .menu-photo{padding-left:56px;display:flex;flex-direction:column;gap:16px;justify-content:flex-start;align-items:flex-end;padding-top:8px}
 .menu-photo-card{border-radius:14px;overflow:hidden;position:relative}
 .menu-photo-card img{width:240px;height:290px;object-fit:cover;display:block;transition:transform 0.4s}
@@ -406,31 +405,30 @@ footer{
     <div class="menu-items">
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Hummus Bi Tahini</div><span class="item-tag">Fan Favorite</span></div>
+          <div class="item-name-row"><div class="item-name">Hummus Bi Tahini</div><div class="item-price">Market</div></div>
           <div class="item-desc">Creamy hand-made hummus with tahini, olive oil, and warm spices. Sittie Maloof's signature recipe.</div>
+          <span class="item-tag">Fan Favorite</span>
         </div>
-        <div class="item-price">Market</div>
       </div>
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Pita Bread</div><span class="item-tag">Made In-House</span></div>
+          <div class="item-name-row"><div class="item-name">Pita Bread</div><div class="item-price">Market</div></div>
           <div class="item-desc">Soft, pillowy house-made pita — the perfect companion for hummus, spreads, and dips.</div>
+          <span class="item-tag">Made In-House</span>
         </div>
-        <div class="item-price">Market</div>
       </div>
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Tabbouleh</div><span class="item-tag">2 for 1 Special</span></div>
+          <div class="item-name-row"><div class="item-name">Tabbouleh</div><div class="item-price">Market</div></div>
           <div class="item-desc">Traditional Lebanese parsley salad with fresh tomato, lemon, mint, and bulgur wheat. Bright and refreshing.</div>
+          <span class="item-tag">2 for 1 Special</span>
         </div>
-        <div class="item-price">Market</div>
       </div>
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Labne</div></div>
+          <div class="item-name-row"><div class="item-name">Labne</div><div class="item-price">Market</div></div>
           <div class="item-desc">Thick, tangy strained yogurt spread with olive oil and za'atar. Order with hummus and save!</div>
         </div>
-        <div class="item-price">Market</div>
       </div>
     </div>
     <div class="menu-photo">
@@ -446,31 +444,30 @@ footer{
     <div class="menu-items">
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Shawarma Pita Wrap</div><span class="item-tag">Best Seller</span></div>
+          <div class="item-name-row"><div class="item-name">Shawarma Pita Wrap</div><div class="item-price">Market</div></div>
           <div class="item-desc">Slow-seasoned shawarma in warm house pita with fresh toppings, garlic sauce and pickled vegetables.</div>
+          <span class="item-tag">Best Seller</span>
         </div>
-        <div class="item-price">Market</div>
       </div>
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Gyro Wrap</div><span class="item-tag">Great for Sharing</span></div>
+          <div class="item-name-row"><div class="item-name">Gyro Wrap</div><div class="item-price">Market</div></div>
           <div class="item-desc">Classic gyro in a warm pita with tomato, onion, and creamy tzatziki. Generous and satisfying.</div>
+          <span class="item-tag">Great for Sharing</span>
         </div>
-        <div class="item-price">Market</div>
       </div>
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Mezze Plate</div></div>
+          <div class="item-name-row"><div class="item-name">Mezze Plate</div><div class="item-price">Market</div></div>
           <div class="item-desc">A generous spread — hummus, tabbouleh, labne, olives, feta, and fresh pita. Perfect for sharing.</div>
         </div>
-        <div class="item-price">Market</div>
       </div>
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Shawarma Bowl</div><span class="item-tag">While Supplies Last</span></div>
+          <div class="item-name-row"><div class="item-name">Shawarma Bowl</div><div class="item-price">Market</div></div>
           <div class="item-desc">Shawarma over rice with fresh toppings, garlic sauce, and your choice of sides.</div>
+          <span class="item-tag">While Supplies Last</span>
         </div>
-        <div class="item-price">Market</div>
       </div>
     </div>
     <div class="menu-photo">
@@ -486,31 +483,27 @@ footer{
     <div class="menu-items">
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Olives &amp; Feta</div></div>
+          <div class="item-name-row"><div class="item-name">Olives &amp; Feta</div><div class="item-price">Market</div></div>
           <div class="item-desc">Marinated Mediterranean olives with creamy feta. Simple, authentic, delicious.</div>
         </div>
-        <div class="item-price">Market</div>
       </div>
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Pickled Turnips</div></div>
+          <div class="item-name-row"><div class="item-name">Pickled Turnips</div><div class="item-price">Market</div></div>
           <div class="item-desc">Vibrant Lebanese pickled turnips — tangy, crunchy, and the perfect accent to any plate.</div>
         </div>
-        <div class="item-price">Market</div>
       </div>
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Fattoush Salad</div></div>
+          <div class="item-name-row"><div class="item-name">Fattoush Salad</div><div class="item-price">Market</div></div>
           <div class="item-desc">Crispy pita chips tossed with fresh vegetables, sumac, and lemon dressing.</div>
         </div>
-        <div class="item-price">Market</div>
       </div>
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">House Rice</div></div>
+          <div class="item-name-row"><div class="item-name">House Rice</div><div class="item-price">Market</div></div>
           <div class="item-desc">Lebanese spiced rice with toasted vermicelli noodles. Fragrant and comforting.</div>
         </div>
-        <div class="item-price">Market</div>
       </div>
     </div>
     <div class="menu-photo">
@@ -526,24 +519,21 @@ footer{
     <div class="menu-items">
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Baklava</div></div>
+          <div class="item-name-row"><div class="item-name">Baklava</div><div class="item-price">Market</div></div>
           <div class="item-desc">Homemade baklava layered with pistachios and honey syrup. Rich, sweet, and utterly unforgettable.</div>
         </div>
-        <div class="item-price">Market</div>
       </div>
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Mamoul</div></div>
+          <div class="item-name-row"><div class="item-name">Mamoul</div><div class="item-price">Market</div></div>
           <div class="item-desc">Traditional Lebanese shortbread cookies filled with dates or walnuts and dusted with powdered sugar.</div>
         </div>
-        <div class="item-price">Market</div>
       </div>
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Knafeh</div></div>
+          <div class="item-name-row"><div class="item-name">Knafeh</div><div class="item-price">Market</div></div>
           <div class="item-desc">Shredded pastry over creamy sweet cheese, soaked in rose-water syrup. A Lebanese classic.</div>
         </div>
-        <div class="item-price">Market</div>
       </div>
     </div>
     <div class="menu-photo">
@@ -559,31 +549,27 @@ footer{
     <div class="menu-items">
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Specialty Spices</div></div>
+          <div class="item-name-row"><div class="item-name">Specialty Spices</div><div class="item-price">Varies</div></div>
           <div class="item-desc">Za'atar, sumac, cumin blends, and more — sourced specialty Middle Eastern spices for your kitchen.</div>
         </div>
-        <div class="item-price">Varies</div>
       </div>
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Rose Water &amp; Orange Blossom</div></div>
+          <div class="item-name-row"><div class="item-name">Rose Water &amp; Orange Blossom</div><div class="item-price">Varies</div></div>
           <div class="item-desc">Imported floral waters for baking, cooking, and traditional Lebanese recipes.</div>
         </div>
-        <div class="item-price">Varies</div>
       </div>
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Tahini &amp; Olive Oil</div></div>
+          <div class="item-name-row"><div class="item-name">Tahini &amp; Olive Oil</div><div class="item-price">Varies</div></div>
           <div class="item-desc">Premium tahini and extra-virgin olive oil — the backbone of Lebanese cooking.</div>
         </div>
-        <div class="item-price">Varies</div>
       </div>
       <div class="menu-item">
         <div class="item-info">
-          <div class="item-name-row"><div class="item-name">Specialty Pantry Items</div></div>
+          <div class="item-name-row"><div class="item-name">Specialty Pantry Items</div><div class="item-price">Varies</div></div>
           <div class="item-desc">Dried chickpeas, lentils, couscous, specialty grains, preserved lemons, and much more.</div>
         </div>
-        <div class="item-price">Varies</div>
       </div>
     </div>
     <div class="menu-photo">
@@ -894,14 +880,12 @@ window.addEventListener('scroll', () => {
     var container = panel.querySelector('.menu-items');
     if(!container) return;
     container.innerHTML = menu[panelId].map(function(item){
-      var imgHtml = item.image ? '<img src="'+item.image+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;flex-shrink:0;margin-left:16px;">' : '';
-      return '<div class="menu-item" style="align-items:center;">'+
+      var imgHtml = item.image ? '<img src="'+item.image+'" style="width:80px;height:80px;object-fit:cover;border-radius:8px;margin-top:8px;">' : '';
+      return '<div class="menu-item">'+
         '<div class="item-info">'+
-          '<div class="item-name-row"><div class="item-name">'+item.name+'</div>'+(item.tag ? '<span class="item-tag">'+item.tag+'</span>' : '')+'</div>'+
+          '<div class="item-name-row"><div class="item-name">'+item.name+'</div><div class="item-price">'+(item.price||'Market')+'</div></div>'+
           (item.desc ? '<div class="item-desc">'+item.desc+'</div>' : '')+
-        '</div>'+
-        '<div style="display:flex;align-items:center;gap:12px;flex-shrink:0;">'+
-          '<div class="item-price">'+( item.price||'Market')+'</div>'+
+          (item.tag ? '<span class="item-tag">'+item.tag+'</span>' : '')+
           imgHtml+
         '</div>'+
       '</div>';
