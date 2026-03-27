@@ -1,0 +1,875 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Meraki Souq — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#faf8f4;--white:#fff;--dark:#1a1611;--mid:#4a4035;--muted:#8a7d6e;
+  --border:#e8e0d4;--accent:#b85c1a;--accent2:#c4943a;--warm:#f5efe6;
+  --red:#c0392b;--green:#27ae60;--radius:10px;--sidebar:220px;
+}
+body{background:var(--bg);color:var(--dark);font-family:'Lato',sans-serif;min-height:100vh}
+/* ── LOGIN ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:var(--warm)}
+.login-card{background:var(--white);border-radius:16px;padding:48px 44px;box-shadow:0 20px 60px rgba(0,0,0,.1);width:100%;max-width:400px}
+.login-card h1{font-family:'Playfair Display',serif;font-size:28px;margin-bottom:6px}
+.login-card p{font-size:14px;color:var(--muted);margin-bottom:32px}
+.field{margin-bottom:20px}
+.field label{display:block;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);margin-bottom:8px}
+.field input,.field textarea,.field select{width:100%;padding:11px 13px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;font-family:'Lato',sans-serif;color:var(--dark);background:var(--bg);outline:none;transition:border-color .2s;resize:vertical}
+.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--accent)}
+.field textarea{min-height:72px}
+.field small{display:block;margin-top:5px;font-size:11px;color:var(--muted)}
+.login-btn{width:100%;padding:14px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.login-btn:hover{background:var(--accent)}
+.login-error{color:var(--red);font-size:13px;margin-top:12px;display:none;text-align:center}
+/* ── SHELL ── */
+#admin-screen{display:none;min-height:100vh}
+.admin-header{background:var(--dark);color:#fff;padding:0 28px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200}
+.admin-header h2{font-family:'Playfair Display',serif;font-size:18px}
+.admin-header-right{display:flex;align-items:center;gap:12px}
+.preview-btn{background:var(--accent);border:none;color:#fff;padding:8px 18px;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-decoration:none;display:inline-block}
+.preview-btn:hover{background:var(--accent2)}
+.logout-btn{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:#fff;padding:8px 16px;border-radius:6px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
+.logout-btn:hover{background:rgba(255,255,255,.2)}
+/* Mode tabs */
+.mode-tabs{display:flex;border-bottom:1px solid var(--border);background:var(--white);padding:0 28px}
+.mode-tab{padding:14px 20px;font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;transition:color .2s,border-color .2s}
+.mode-tab:hover{color:var(--dark)}
+.mode-tab.active{color:var(--dark);border-bottom-color:var(--accent)}
+/* ── MENU MANAGER ── */
+#mode-menu{padding:32px 28px}
+.cat-tabs{display:flex;gap:4px;border-bottom:2px solid var(--border);margin-bottom:32px;overflow-x:auto}
+.cat-tab{padding:11px 20px;font-size:13px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;transition:color .2s,border-color .2s;white-space:nowrap}
+.cat-tab:hover{color:var(--dark)}
+.cat-tab.active{color:var(--dark);border-bottom-color:var(--accent)}
+.cat-panel{display:none}.cat-panel.active{display:block}
+.item-list{display:flex;flex-direction:column;gap:10px;margin-bottom:28px}
+.item-row{display:flex;align-items:center;gap:14px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:12px 16px}
+.item-row-img{width:56px;height:56px;object-fit:cover;border-radius:8px;flex-shrink:0;background:var(--warm);border:1px solid var(--border)}
+.item-row-info{flex:1;min-width:0}
+.item-row-name{font-size:14px;font-weight:700;color:var(--dark);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-row-desc{font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}
+.item-row-meta{display:flex;gap:6px;margin-top:4px;align-items:center}
+.item-row-price{font-size:12px;font-weight:700;color:var(--accent)}
+.item-row-tag{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);background:#fdf0e6;padding:2px 7px;border-radius:4px}
+.item-actions{display:flex;gap:6px;flex-shrink:0}
+.btn-edit,.btn-delete{padding:6px 13px;border-radius:6px;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;border:none;transition:background .2s}
+.btn-edit{background:var(--warm);color:var(--dark)}.btn-edit:hover{background:var(--border)}
+.btn-delete{background:#fde8e6;color:var(--red)}.btn-delete:hover{background:#f9c8c4}
+.btn-add{display:inline-flex;align-items:center;gap:8px;padding:11px 20px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.btn-add:hover{background:var(--accent)}
+.btn-add svg{width:15px;height:15px;stroke:currentColor;stroke-width:2.5;fill:none}
+.empty-state{text-align:center;padding:40px 24px;color:var(--muted);font-size:14px;border:2px dashed var(--border);border-radius:var(--radius)}
+/* ── SITE EDITOR ── */
+#mode-editor{display:none;flex:1;overflow:hidden}
+.editor-body{display:flex;height:calc(100vh - 108px)}
+.editor-sidebar{width:var(--sidebar);border-right:1px solid var(--border);background:var(--white);overflow-y:auto;flex-shrink:0}
+.editor-sidebar ul{list-style:none;padding:12px 0}
+.editor-sidebar li a{display:block;padding:10px 20px;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);text-decoration:none;transition:color .2s,background .2s;border-left:3px solid transparent}
+.editor-sidebar li a:hover{color:var(--dark);background:var(--warm)}
+.editor-sidebar li a.active{color:var(--dark);background:var(--warm);border-left-color:var(--accent)}
+.editor-sidebar .sidebar-group{padding:16px 20px 6px;font-size:10px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:var(--border)}
+.editor-main{flex:1;overflow-y:auto;padding:32px 36px}
+.editor-section{display:none}.editor-section.active{display:block}
+.editor-section h3{font-family:'Playfair Display',serif;font-size:22px;color:var(--dark);margin-bottom:6px}
+.editor-section .section-desc{font-size:13px;color:var(--muted);margin-bottom:28px;line-height:1.6}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.field-row.full{grid-template-columns:1fr}
+hr.divider{border:none;border-top:1px solid var(--border);margin:24px 0}
+/* Array items (marquee, hours, faq, photos) */
+.array-list{display:flex;flex-direction:column;gap:8px;margin-bottom:16px}
+.array-item{display:flex;align-items:center;gap:10px;background:var(--white);border:1px solid var(--border);border-radius:8px;padding:10px 14px}
+.array-item-fields{flex:1;display:flex;gap:10px;flex-wrap:wrap}
+.array-item-fields input{flex:1;min-width:120px;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:'Lato',sans-serif;color:var(--dark);background:var(--bg);outline:none}
+.array-item-fields input:focus{border-color:var(--accent)}
+.array-item-fields input.wide{flex:2}
+.btn-remove{background:none;border:none;color:var(--red);cursor:pointer;font-size:18px;line-height:1;padding:2px 4px;flex-shrink:0}
+.btn-add-row{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;background:var(--warm);color:var(--dark);border:none;border-radius:7px;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.btn-add-row:hover{background:var(--border)}
+/* Image fields */
+.img-field-wrap{display:flex;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.img-thumb{width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid var(--border);flex-shrink:0}
+.img-thumb.placeholder{background:var(--warm);display:flex;align-items:center;justify-content:center;color:var(--border);font-size:22px}
+.img-upload-side{display:flex;flex-direction:column;gap:6px;justify-content:center}
+.btn-upload{display:inline-block;padding:8px 14px;background:var(--warm);color:var(--dark);border:none;border-radius:7px;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer}
+.btn-upload:hover{background:var(--border)}
+.btn-clear-img{background:none;border:none;color:var(--red);font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline;display:none}
+/* Save bar */
+.save-bar{padding:20px 0 0;display:flex;gap:10px;border-top:1px solid var(--border);margin-top:28px}
+.btn-save-section{padding:12px 28px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.btn-save-section:hover{background:var(--accent)}
+/* Modal */
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center;padding:24px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--white);border-radius:16px;padding:32px;width:100%;max-width:500px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 80px rgba(0,0,0,.2)}
+.modal h3{font-family:'Playfair Display',serif;font-size:20px;margin-bottom:22px}
+.modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+.btn-cancel{padding:10px 20px;background:var(--warm);color:var(--dark);border:none;border-radius:8px;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer}
+.btn-cancel:hover{background:var(--border)}
+.btn-save{padding:10px 22px;background:var(--dark);color:#fff;border:none;border-radius:8px;font-size:12px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;cursor:pointer;transition:background .2s}
+.btn-save:hover{background:var(--accent)}
+/* img preview in modal */
+.img-preview-wrap{margin-top:8px;display:flex;align-items:center;gap:12px}
+.img-preview{width:68px;height:68px;object-fit:cover;border-radius:8px;border:1px solid var(--border);display:none}
+/* Toast */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--green);color:#fff;padding:13px 20px;border-radius:10px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,0,0,.15);transform:translateY(60px);opacity:0;transition:transform .3s,opacity .3s;z-index:600}
+.toast.show{transform:translateY(0);opacity:1}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login-screen">
+  <div class="login-card">
+    <h1>Meraki Souq</h1>
+    <p>Admin Panel — Sign in to continue</p>
+    <div class="field"><label>Username</label><input type="text" id="username" autocomplete="username" placeholder="Username"/></div>
+    <div class="field"><label>Password</label><input type="password" id="password" autocomplete="current-password" placeholder="Password"/></div>
+    <button class="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="login-error">Incorrect username or password.</div>
+  </div>
+</div>
+
+<!-- ADMIN -->
+<div id="admin-screen">
+  <div class="admin-header">
+    <h2>Meraki Souq Admin</h2>
+    <div class="admin-header-right">
+      <a class="preview-btn" href="/home" target="_blank">Preview Site</a>
+      <button class="logout-btn" onclick="doLogout()">Sign Out</button>
+    </div>
+  </div>
+  <div class="mode-tabs">
+    <button class="mode-tab active" onclick="switchMode('menu',this)">Menu Manager</button>
+    <button class="mode-tab" onclick="switchMode('editor',this)">Site Editor</button>
+  </div>
+
+  <!-- ── MENU MANAGER ── -->
+  <div id="mode-menu">
+    <div class="cat-tabs">
+      <button class="cat-tab active" onclick="switchCat('starters',this)">Starters</button>
+      <button class="cat-tab" onclick="switchCat('mains',this)">Mains</button>
+      <button class="cat-tab" onclick="switchCat('mezze',this)">Mezze &amp; Sides</button>
+      <button class="cat-tab" onclick="switchCat('sweets',this)">Sweets</button>
+      <button class="cat-tab" onclick="switchCat('grocery',this)">Grocery</button>
+    </div>
+    <div id="cat-starters" class="cat-panel active"></div>
+    <div id="cat-mains" class="cat-panel"></div>
+    <div id="cat-mezze" class="cat-panel"></div>
+    <div id="cat-sweets" class="cat-panel"></div>
+    <div id="cat-grocery" class="cat-panel"></div>
+  </div>
+
+  <!-- ── SITE EDITOR ── -->
+  <div id="mode-editor">
+    <div class="editor-body">
+      <div class="editor-sidebar">
+        <ul>
+          <li class="sidebar-group">Site</li>
+          <li><a href="#" class="active" onclick="showSection('general',this)">General</a></li>
+          <li><a href="#" onclick="showSection('nav',this)">Navigation</a></li>
+          <li class="sidebar-group">Sections</li>
+          <li><a href="#" onclick="showSection('hero',this)">Hero</a></li>
+          <li><a href="#" onclick="showSection('marquee',this)">Marquee</a></li>
+          <li><a href="#" onclick="showSection('menuSection',this)">Menu Header</a></li>
+          <li><a href="#" onclick="showSection('about',this)">About</a></li>
+          <li><a href="#" onclick="showSection('photos',this)">Photo Gallery</a></li>
+          <li><a href="#" onclick="showSection('faq',this)">FAQ</a></li>
+          <li><a href="#" onclick="showSection('visit',this)">Hours &amp; Visit</a></li>
+          <li><a href="#" onclick="showSection('footer',this)">Footer</a></li>
+        </ul>
+      </div>
+      <div class="editor-main">
+
+        <!-- GENERAL -->
+        <div class="editor-section active" id="sec-general">
+          <h3>General</h3>
+          <p class="section-desc">Site-wide settings that apply everywhere.</p>
+          <div class="field"><label>Page Title</label><input type="text" id="g-title" placeholder="Meraki Souq – Middle Eastern Market & Art Creations"/></div>
+          <div class="field">
+            <label>Favicon</label>
+            <div class="img-field-wrap">
+              <img id="g-favicon-preview" class="img-thumb" src="" alt="favicon" style="border-radius:4px"/>
+              <div class="img-upload-side">
+                <label class="btn-upload">Upload Favicon<input type="file" accept="image/*" style="display:none" onchange="handleImgUpload(event,'g-favicon-data','g-favicon-preview')"/></label>
+                <button class="btn-clear-img" id="g-favicon-clear" onclick="clearImg('g-favicon-data','g-favicon-preview','g-favicon-clear')">Remove</button>
+              </div>
+            </div>
+            <small>Recommended: 32×32px PNG or ICO</small>
+            <input type="hidden" id="g-favicon-data"/>
+          </div>
+          <div class="save-bar"><button class="btn-save-section" onclick="saveSection('general')">Save Changes</button></div>
+        </div>
+
+        <!-- NAV -->
+        <div class="editor-section" id="sec-nav">
+          <h3>Navigation</h3>
+          <p class="section-desc">Logo and top navigation bar.</p>
+          <div class="field">
+            <label>Logo</label>
+            <div class="img-field-wrap">
+              <img id="nav-logo-preview" class="img-thumb" src="" alt="logo"/>
+              <div class="img-upload-side">
+                <label class="btn-upload">Upload Logo<input type="file" accept="image/*" style="display:none" onchange="handleImgUpload(event,'nav-logo-data','nav-logo-preview')"/></label>
+                <button class="btn-clear-img" id="nav-logo-clear" onclick="clearImg('nav-logo-data','nav-logo-preview','nav-logo-clear')">Remove</button>
+              </div>
+            </div>
+            <input type="hidden" id="nav-logo-data"/>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>CTA Button Text</label><input type="text" id="nav-ctaText" placeholder="Order Online"/></div>
+            <div class="field"><label>CTA Button URL</label><input type="text" id="nav-ctaUrl" placeholder="https://..."/></div>
+          </div>
+          <div class="save-bar"><button class="btn-save-section" onclick="saveSection('nav')">Save Changes</button></div>
+        </div>
+
+        <!-- HERO -->
+        <div class="editor-section" id="sec-hero">
+          <h3>Hero Section</h3>
+          <p class="section-desc">The main banner at the top of the page.</p>
+          <div class="field"><label>Eyebrow Text</label><input type="text" id="hero-eyebrow" placeholder="Middle Eastern Market & Art Creations"/></div>
+          <div class="field"><label>Title HTML</label><textarea id="hero-title" placeholder="Fresh &lt;em&gt;Lebanese&lt;/em&gt;&lt;br/&gt;flavors..."></textarea><small>Use &lt;em&gt; for italic accent, &lt;br/&gt; for line breaks</small></div>
+          <div class="field"><label>Subtitle</label><textarea id="hero-subtitle"></textarea></div>
+          <hr class="divider"/>
+          <div class="field-row">
+            <div class="field"><label>Button 1 Text</label><input type="text" id="hero-btn1Text" placeholder="Order Online"/></div>
+            <div class="field"><label>Button 1 URL</label><input type="text" id="hero-btn1Url"/></div>
+          </div>
+          <div class="field-row">
+            <div class="field"><label>Button 2 Text</label><input type="text" id="hero-btn2Text" placeholder="View Menu"/></div>
+            <div class="field"><label>Button 2 URL</label><input type="text" id="hero-btn2Url" placeholder="#menu"/></div>
+          </div>
+          <hr class="divider"/>
+          <div class="field-row">
+            <div class="field"><label>Badge Year</label><input type="text" id="hero-badgeYear" placeholder="2021"/></div>
+            <div class="field"><label>Badge Label</label><input type="text" id="hero-badgeSince" placeholder="Est. Ducktown"/></div>
+          </div>
+          <hr class="divider"/>
+          <div class="field">
+            <label>Main Hero Image</label>
+            <div class="img-field-wrap">
+              <img id="hero-main-preview" class="img-thumb" src="" alt="hero"/>
+              <div class="img-upload-side">
+                <label class="btn-upload">Upload<input type="file" accept="image/*" style="display:none" onchange="handleImgUpload(event,'hero-main-data','hero-main-preview')"/></label>
+                <button class="btn-clear-img" id="hero-main-clear" onclick="clearImg('hero-main-data','hero-main-preview','hero-main-clear')">Remove</button>
+              </div>
+            </div>
+            <input type="hidden" id="hero-main-data"/>
+          </div>
+          <div class="field">
+            <label>Floating Circle Image</label>
+            <div class="img-field-wrap">
+              <img id="hero-float-preview" class="img-thumb" src="" alt="float" style="border-radius:50%"/>
+              <div class="img-upload-side">
+                <label class="btn-upload">Upload<input type="file" accept="image/*" style="display:none" onchange="handleImgUpload(event,'hero-float-data','hero-float-preview')"/></label>
+                <button class="btn-clear-img" id="hero-float-clear" onclick="clearImg('hero-float-data','hero-float-preview','hero-float-clear')">Remove</button>
+              </div>
+            </div>
+            <input type="hidden" id="hero-float-data"/>
+          </div>
+          <div class="save-bar"><button class="btn-save-section" onclick="saveSection('hero')">Save Changes</button></div>
+        </div>
+
+        <!-- MARQUEE -->
+        <div class="editor-section" id="sec-marquee">
+          <h3>Marquee Banner</h3>
+          <p class="section-desc">The scrolling text strip below the hero. Add or remove items.</p>
+          <div class="array-list" id="marquee-list"></div>
+          <button class="btn-add-row" onclick="addMarqueeItem()">+ Add Item</button>
+          <div class="save-bar"><button class="btn-save-section" onclick="saveSection('marquee')">Save Changes</button></div>
+        </div>
+
+        <!-- MENU SECTION HEADER -->
+        <div class="editor-section" id="sec-menuSection">
+          <h3>Menu Section Header</h3>
+          <p class="section-desc">The text above the menu tabs. Food items are managed in the Menu Manager tab.</p>
+          <div class="field"><label>Eyebrow</label><input type="text" id="ms-eyebrow" placeholder="Our Menu"/></div>
+          <div class="field"><label>Title HTML</label><textarea id="ms-title" placeholder="Made fresh,&lt;br/&gt;served with love"></textarea></div>
+          <div class="field"><label>Subtitle</label><textarea id="ms-subtitle"></textarea></div>
+          <div class="save-bar"><button class="btn-save-section" onclick="saveSection('menuSection')">Save Changes</button></div>
+        </div>
+
+        <!-- ABOUT -->
+        <div class="editor-section" id="sec-about">
+          <h3>About Section</h3>
+          <p class="section-desc">The dark full-width strip with the story text and gallery images.</p>
+          <div class="field"><label>Eyebrow</label><input type="text" id="ab-eyebrow" placeholder="Crafted with love · Since 2021"/></div>
+          <div class="field"><label>Title</label><input type="text" id="ab-title"/></div>
+          <div class="field"><label>Paragraph 1</label><textarea id="ab-para1"></textarea></div>
+          <div class="field"><label>Paragraph 2</label><textarea id="ab-para2"></textarea></div>
+          <div class="field-row">
+            <div class="field"><label>CTA Button Text</label><input type="text" id="ab-ctaText" placeholder="Our Story"/></div>
+            <div class="field"><label>CTA Button URL</label><input type="text" id="ab-ctaUrl"/></div>
+          </div>
+          <hr class="divider"/>
+          <div class="field"><label>Gallery Image 1 (tall)</label>
+            <div class="img-field-wrap">
+              <img id="ab-img1-preview" class="img-thumb" src="" alt=""/>
+              <div class="img-upload-side">
+                <label class="btn-upload">Upload<input type="file" accept="image/*" style="display:none" onchange="handleImgUpload(event,'ab-img1-data','ab-img1-preview')"/></label>
+                <button class="btn-clear-img" id="ab-img1-clear" onclick="clearImg('ab-img1-data','ab-img1-preview','ab-img1-clear')">Remove</button>
+              </div>
+            </div>
+            <input type="hidden" id="ab-img1-data"/>
+          </div>
+          <div class="field"><label>Gallery Image 2</label>
+            <div class="img-field-wrap">
+              <img id="ab-img2-preview" class="img-thumb" src="" alt=""/>
+              <div class="img-upload-side">
+                <label class="btn-upload">Upload<input type="file" accept="image/*" style="display:none" onchange="handleImgUpload(event,'ab-img2-data','ab-img2-preview')"/></label>
+                <button class="btn-clear-img" id="ab-img2-clear" onclick="clearImg('ab-img2-data','ab-img2-preview','ab-img2-clear')">Remove</button>
+              </div>
+            </div>
+            <input type="hidden" id="ab-img2-data"/>
+          </div>
+          <div class="field"><label>Gallery Image 3</label>
+            <div class="img-field-wrap">
+              <img id="ab-img3-preview" class="img-thumb" src="" alt=""/>
+              <div class="img-upload-side">
+                <label class="btn-upload">Upload<input type="file" accept="image/*" style="display:none" onchange="handleImgUpload(event,'ab-img3-data','ab-img3-preview')"/></label>
+                <button class="btn-clear-img" id="ab-img3-clear" onclick="clearImg('ab-img3-data','ab-img3-preview','ab-img3-clear')">Remove</button>
+              </div>
+            </div>
+            <input type="hidden" id="ab-img3-data"/>
+          </div>
+          <div class="save-bar"><button class="btn-save-section" onclick="saveSection('about')">Save Changes</button></div>
+        </div>
+
+        <!-- PHOTOS -->
+        <div class="editor-section" id="sec-photos">
+          <h3>Photo Gallery</h3>
+          <p class="section-desc">The horizontal scroll strip of dish photos. Each card has an image, a category label, and a name.</p>
+          <div class="field"><label>Section Title</label><input type="text" id="ps-title" placeholder="Fresh from our kitchen"/></div>
+          <div class="field-row">
+            <div class="field"><label>Link Text</label><input type="text" id="ps-orderText" placeholder="Order Online →"/></div>
+            <div class="field"><label>Link URL</label><input type="text" id="ps-orderUrl"/></div>
+          </div>
+          <hr class="divider"/>
+          <div class="array-list" id="photos-list"></div>
+          <button class="btn-add-row" onclick="addPhotoItem()">+ Add Photo Card</button>
+          <div class="save-bar"><button class="btn-save-section" onclick="saveSection('photos')">Save Changes</button></div>
+        </div>
+
+        <!-- FAQ -->
+        <div class="editor-section" id="sec-faq">
+          <h3>FAQ</h3>
+          <p class="section-desc">Frequently asked questions accordion.</p>
+          <div class="field"><label>Eyebrow</label><input type="text" id="faq-eyebrow" placeholder="Got Questions"/></div>
+          <div class="field"><label>Title</label><input type="text" id="faq-title" placeholder="Frequently asked questions"/></div>
+          <div class="field"><label>Subtitle (HTML ok)</label><textarea id="faq-subtitle"></textarea></div>
+          <hr class="divider"/>
+          <div class="array-list" id="faq-list"></div>
+          <button class="btn-add-row" onclick="addFaqItem()">+ Add Question</button>
+          <div class="save-bar"><button class="btn-save-section" onclick="saveSection('faq')">Save Changes</button></div>
+        </div>
+
+        <!-- VISIT -->
+        <div class="editor-section" id="sec-visit">
+          <h3>Hours &amp; Visit</h3>
+          <p class="section-desc">Opening hours, address, and contact info.</p>
+          <div class="field"><label>Eyebrow</label><input type="text" id="v-eyebrow" placeholder="Come visit us"/></div>
+          <div class="field"><label>Title</label><input type="text" id="v-title"/></div>
+          <div class="field"><label>Subtitle</label><textarea id="v-subtitle"></textarea></div>
+          <div class="field-row">
+            <div class="field"><label>Order Button URL</label><input type="text" id="v-orderUrl"/></div>
+            <div class="field"><label>Maps URL</label><input type="text" id="v-mapsUrl"/></div>
+          </div>
+          <hr class="divider"/>
+          <p style="font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--mid);margin-bottom:12px">Opening Hours</p>
+          <div class="array-list" id="hours-list"></div>
+          <button class="btn-add-row" onclick="addHoursRow()">+ Add Row</button>
+          <hr class="divider"/>
+          <div class="field"><label>Address</label><textarea id="v-address" style="min-height:56px"></textarea><small>Use new lines for line breaks</small></div>
+          <div class="field-row">
+            <div class="field"><label>Phone</label><input type="text" id="v-phone" placeholder="(706) 851-0280"/></div>
+            <div class="field"><label>Email</label><input type="text" id="v-email" placeholder="merakisouq2021@gmail.com"/></div>
+          </div>
+          <div class="save-bar"><button class="btn-save-section" onclick="saveSection('visit')">Save Changes</button></div>
+        </div>
+
+        <!-- FOOTER -->
+        <div class="editor-section" id="sec-footer">
+          <h3>Footer</h3>
+          <p class="section-desc">Bottom of page branding and links.</p>
+          <div class="field">
+            <label>Footer Logo</label>
+            <div class="img-field-wrap">
+              <img id="ft-logo-preview" class="img-thumb" src="" alt="logo"/>
+              <div class="img-upload-side">
+                <label class="btn-upload">Upload<input type="file" accept="image/*" style="display:none" onchange="handleImgUpload(event,'ft-logo-data','ft-logo-preview')"/></label>
+                <button class="btn-clear-img" id="ft-logo-clear" onclick="clearImg('ft-logo-data','ft-logo-preview','ft-logo-clear')">Remove</button>
+              </div>
+            </div>
+            <input type="hidden" id="ft-logo-data"/>
+          </div>
+          <div class="field"><label>Tagline</label><textarea id="ft-tagline" style="min-height:60px"></textarea></div>
+          <div class="field"><label>Address Line</label><input type="text" id="ft-address" placeholder="303 Main St. · Ducktown, TN 37326"/></div>
+          <div class="field-row">
+            <div class="field"><label>Facebook URL</label><input type="text" id="ft-facebook"/></div>
+          </div>
+          <div class="field"><label>Copyright Text</label><input type="text" id="ft-copyright" placeholder="© 2024 Meraki Souq · Ducktown, TN"/></div>
+          <div class="save-bar"><button class="btn-save-section" onclick="saveSection('footer')">Save Changes</button></div>
+        </div>
+
+      </div><!-- /editor-main -->
+    </div><!-- /editor-body -->
+  </div><!-- /mode-editor -->
+</div><!-- /admin-screen -->
+
+<!-- MENU ITEM MODAL -->
+<div class="modal-overlay" id="item-modal" onclick="closeModalOnOverlay(event)">
+  <div class="modal">
+    <h3 id="modal-title">Add Item</h3>
+    <div class="field"><label>Item Name *</label><input type="text" id="f-name"/></div>
+    <div class="field"><label>Description</label><textarea id="f-desc"></textarea></div>
+    <div class="field-row">
+      <div class="field"><label>Price</label><input type="text" id="f-price" placeholder="Market"/></div>
+      <div class="field"><label>Tag/Label</label><input type="text" id="f-tag" placeholder="Fan Favorite"/></div>
+    </div>
+    <div class="field">
+      <label>Photo</label>
+      <input type="file" id="f-image" accept="image/*" onchange="handleMenuImg(event)"/>
+      <div class="img-preview-wrap">
+        <img id="f-img-preview" class="img-preview" src="" alt=""/>
+        <button style="background:none;border:none;color:var(--red);font-size:12px;font-weight:700;cursor:pointer;text-decoration:underline;display:none" id="f-img-clear" onclick="clearMenuImg()">Remove</button>
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal()">Cancel</button>
+      <button class="btn-save" onclick="saveItem()">Save Item</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Changes saved!</div>
+
+<script>
+// Password is SHA-256 hashed — plaintext never stored in source
+var CREDS={u:'mmaloof',h:'27319dd73007e038b91c66d317bc9a79de09cfcd78dabe084c1319c7aa45b3f9'};
+
+// ── DEFAULT DATA ──
+var DEFAULT_SETTINGS={
+  site:{title:'Meraki Souq – Middle Eastern Market',favicon:'',orderUrl:''},
+  nav:{logo:'',ctaText:'Order Over Phone',ctaUrl:''},
+  hero:{eyebrow:'Middle Eastern Market & Specialty Grocery',title:'Fresh <em>Lebanese</em><br/>flavors &amp; authentic<br/>goods',subtitle:"Handmade hummus, shawarma, tabbouleh & more — crafted with love from Sittie Maloof's recipes.",btn1Text:'Order Over Phone',btn1Url:'',btn2Text:'View Menu',btn2Url:'#menu',mainImage:'',floatImage:'',badgeYear:'2021',badgeSince:'Est. Ducktown'},
+  marquee:{items:['Fresh-Made Daily','Traditional Lebanese Recipes','Middle Eastern Grocery','Specialty Grocery','Ducktown, Tennessee','(706) 851-0280']},
+  menuSection:{eyebrow:'Our Menu',title:'Made fresh,<br/>served with love',subtitle:"Every dish is prepared the day it's served, using time-honored Lebanese recipes passed down through the Maloof family."},
+  about:{eyebrow:'Crafted with love · Since 2021',title:'Bold flavours, authentic ingredients, made with meraki',para1:"Meraki Souq was born from a deep love of Lebanese culture and food — rooted in the recipes of Sittie Maloof and the warmth of family tradition.",para2:'The name says it all: <em>Meraki</em> means to do something with love, passion, and creativity. <em>Souq</em> is Arabic for marketplace. Every dish we prepare carries the flavors of Sittie Maloof\'s wonderful Lebanese kitchen — generous, fresh, and made with care.',ctaText:'',ctaUrl:'',img1:'',img2:'',img3:''},
+  photoScroll:{title:'Fresh from our kitchen',orderText:'Order Over Phone →',orderUrl:'',photos:[{image:'',category:'Starter',name:'Hummus Bi Tahini'},{image:'',category:'Main',name:'Shawarma Sandwich'},{image:'',category:'Made In-House',name:'Fresh Pita Bread'}]},
+  faq:{eyebrow:'Got Questions',title:'Frequently asked questions',subtitle:'If you have further questions, don\'t hesitate to call us at <strong>(706) 851-0280</strong> or reach out by email.',items:[{q:'Do you accept walk-ins?',a:'Yes! We welcome walk-ins during all our open hours. No reservation needed — just come hungry.'},{q:'What are your opening hours?',a:'We\'re open Monday & Sunday 11am–2pm, and Tuesday through Saturday 11am–5pm. Hours may vary — check Google or call us to confirm.'},{q:'How do I place an order?',a:'Give us a call at (706) 851-0280 during business hours and we\'ll take your order over the phone for carry-out pickup.'},{q:'Is the food made fresh daily?',a:'Absolutely. Every dish — from our hummus to our tabbouleh to our pita — is made fresh the day it\'s served. We never reheat yesterday\'s food.'},{q:'Do you have vegetarian options?',a:'Yes, many of our dishes are naturally vegetarian — hummus, tabbouleh, labne, fattoush, pita, and much of our grocery selection.'},{q:'Do you carry specialty grocery items?',a:'Yes! Meraki Souq carries specialty Middle Eastern grocery items, spices, pantry goods, and imported products alongside our fresh food.'}]},
+  visit:{eyebrow:'Come visit us',title:'Come grab a plate at Meraki Souq',subtitle:"Meraki Souq is about simple pleasures — good food, warm space, and moments worth slowing down for. We'd love to see you.",orderUrl:'',mapsUrl:'https://maps.google.com/?q=303+Main+St+Ducktown+TN+37326',hours:[{day:'Mon',time:'11am – 2pm'},{day:'Tue',time:'11am – 5pm'},{day:'Wed',time:'11am – 5pm'},{day:'Thu',time:'11am – 5pm'},{day:'Fri',time:'11am – 5pm'},{day:'Sat',time:'11am – 5pm'},{day:'Sun',time:'11am – 2pm'}],address:'303 Main St.\nDucktown, TN 37326',phone:'(706) 851-0280',email:'merakisouq2021@gmail.com'},
+  footer:{logo:'',tagline:'Fresh Lebanese food & specialty Middle Eastern grocery in Ducktown, Tennessee.',address:'303 Main St. · Ducktown, TN 37326',facebookUrl:'https://www.facebook.com/merakisouqmarket/',copyright:'© 2024 Meraki Souq · Ducktown, TN'}
+};
+
+var DEFAULT_MENU={
+  starters:[{id:uid(),name:'Hummus Bi Tahini',desc:"Creamy hand-made hummus with tahini, olive oil, and warm spices. Sittie Maloof's signature recipe.",price:'Market',tag:'Fan Favorite',image:''},{id:uid(),name:'Pita Bread',desc:'Soft, pillowy house-made pita — the perfect companion for hummus, spreads, and dips.',price:'Market',tag:'Made In-House',image:''},{id:uid(),name:'Tabbouleh',desc:'Traditional Lebanese parsley salad with fresh tomato, lemon, mint, and bulgur wheat.',price:'Market',tag:'',image:''},{id:uid(),name:'Labne',desc:"Thick, tangy strained yogurt spread with olive oil and za'atar. Order with hummus and save!",price:'Market',tag:'2 for 1 Special',image:''}],
+  mains:[{id:uid(),name:'Shawarma Pita Wrap',desc:'Slow-seasoned shawarma in warm house pita with fresh toppings, garlic sauce and pickled vegetables.',price:'Market',tag:'Best Seller',image:''},{id:uid(),name:'Gyro Wrap',desc:'',price:'Market',tag:'',image:''},{id:uid(),name:'Mezze Plate',desc:'A generous spread — hummus, tabbouleh, labne, olives, feta, and fresh pita. Perfect for sharing.',price:'Market',tag:'Great for Sharing',image:''},{id:uid(),name:'Shawarma Bowl',desc:'',price:'Market',tag:'',image:''}],
+  mezze:[{id:uid(),name:'Olives & Feta',desc:'',price:'Market',tag:'',image:''},{id:uid(),name:'Pickled Turnips',desc:'',price:'Market',tag:'',image:''},{id:uid(),name:'Fattoush Salad',desc:'',price:'Market',tag:'',image:''},{id:uid(),name:'House Rice',desc:'',price:'Market',tag:'',image:''}],
+  sweets:[{id:uid(),name:'Baklava',desc:'Homemade baklava layered with pistachios and honey syrup. Rich, sweet, and utterly unforgettable.',price:'Market',tag:'While Supplies Last',image:''},{id:uid(),name:'Mamoul',desc:'',price:'Market',tag:'',image:''},{id:uid(),name:'Knafeh',desc:'',price:'Market',tag:'',image:''}],
+  grocery:[{id:uid(),name:'Specialty Spices',desc:'',price:'Varies',tag:'',image:''},{id:uid(),name:'Rose Water & Orange Blossom',desc:'',price:'Varies',tag:'',image:''},{id:uid(),name:'Tahini & Olive Oil',desc:'',price:'Varies',tag:'',image:''},{id:uid(),name:'Specialty Pantry Items',desc:'',price:'Varies',tag:'',image:''}]
+};
+
+function uid(){return Math.random().toString(36).slice(2,10);}
+
+// ── STATE ──
+var menu={}, settings={};
+var editingCat=null, editingId=null, menuImgData='';
+
+// ── AUTH ──
+async function hashStr(s){
+  var buf=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));
+  return Array.from(new Uint8Array(buf)).map(function(b){return b.toString(16).padStart(2,'0');}).join('');
+}
+async function doLogin(){
+  var u=document.getElementById('username').value.trim();
+  var p=document.getElementById('password').value;
+  var h=await hashStr(p);
+  if(u===CREDS.u&&h===CREDS.h){sessionStorage.setItem('meraki_admin','1');showAdmin();}
+  else{document.getElementById('login-error').style.display='block';}
+}
+['username','password'].forEach(function(id){
+  document.getElementById(id).addEventListener('keydown',function(e){if(e.key==='Enter')doLogin();});
+});
+function doLogout(){sessionStorage.removeItem('meraki_admin');document.getElementById('admin-screen').style.display='none';document.getElementById('login-screen').style.display='flex';}
+
+function showAdmin(){
+  document.getElementById('login-screen').style.display='none';
+  document.getElementById('admin-screen').style.display='block';
+  loadData();
+  renderAllCats();
+  loadSettingsToForm();
+}
+
+// ── DATA ──
+function loadData(){
+  var sm=localStorage.getItem('meraki_menu');
+  menu=sm?tryParse(sm,deepCopy(DEFAULT_MENU)):deepCopy(DEFAULT_MENU);
+  var ss=localStorage.getItem('meraki_settings');
+  settings=ss?tryParse(ss,deepCopy(DEFAULT_SETTINGS)):deepCopy(DEFAULT_SETTINGS);
+}
+function tryParse(s,fallback){try{return JSON.parse(s);}catch(e){return fallback;}}
+function deepCopy(o){return JSON.parse(JSON.stringify(o));}
+function saveMenuData(){localStorage.setItem('meraki_menu',JSON.stringify(menu));showToast();}
+function saveSettingsData(){localStorage.setItem('meraki_settings',JSON.stringify(settings));showToast();}
+
+// ── MODE TABS ──
+function switchMode(mode,btn){
+  document.querySelectorAll('.mode-tab').forEach(function(t){t.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById('mode-menu').style.display=mode==='menu'?'block':'none';
+  var ed=document.getElementById('mode-editor');
+  ed.style.display=mode==='editor'?'flex':'none';
+}
+
+// ── MENU MANAGER ──
+var CAT_LABELS={starters:'Starters',mains:'Mains',mezze:'Mezze & Sides',sweets:'Sweets',grocery:'Grocery'};
+var CATS=['starters','mains','mezze','sweets','grocery'];
+function renderAllCats(){CATS.forEach(renderCat);}
+function renderCat(cat){
+  var el=document.getElementById('cat-'+cat);
+  var items=menu[cat]||[];
+  var html='<div class="item-list">';
+  if(!items.length)html+='<div class="empty-state">No items. Add one below.</div>';
+  else items.forEach(function(item){
+    html+='<div class="item-row">';
+    if(item.image)html+='<img class="item-row-img" src="'+item.image+'" alt="'+esc(item.name)+'">';
+    else html+='<div class="item-row-img" style="display:flex;align-items:center;justify-content:center;font-size:18px;">🍽</div>';
+    html+='<div class="item-row-info"><div class="item-row-name">'+esc(item.name)+'</div>';
+    if(item.desc)html+='<div class="item-row-desc">'+esc(item.desc)+'</div>';
+    html+='<div class="item-row-meta">';
+    if(item.price)html+='<span class="item-row-price">'+esc(item.price)+'</span>';
+    if(item.tag)html+='<span class="item-row-tag">'+esc(item.tag)+'</span>';
+    html+='</div></div>';
+    html+='<div class="item-actions"><button class="btn-edit" onclick="openEdit(\''+cat+'\',\''+item.id+'\')">Edit</button><button class="btn-delete" onclick="deleteItem(\''+cat+'\',\''+item.id+'\')">Delete</button></div></div>';
+  });
+  html+='</div><button class="btn-add" onclick="openAdd(\''+cat+'\')"><svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Add '+CAT_LABELS[cat]+' Item</button>';
+  el.innerHTML=html;
+}
+function switchCat(cat,btn){
+  document.querySelectorAll('.cat-tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.cat-panel').forEach(function(p){p.classList.remove('active');});
+  btn.classList.add('active');
+  document.getElementById('cat-'+cat).classList.add('active');
+}
+function openAdd(cat){editingCat=cat;editingId=null;menuImgData='';
+  document.getElementById('modal-title').textContent='Add Item — '+CAT_LABELS[cat];
+  ['f-name','f-desc','f-price','f-tag'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('f-price').value='Market';
+  document.getElementById('f-image').value='';
+  document.getElementById('f-img-preview').style.display='none';
+  document.getElementById('f-img-clear').style.display='none';
+  document.getElementById('item-modal').classList.add('open');
+  document.getElementById('f-name').focus();
+}
+function openEdit(cat,id){editingCat=cat;editingId=id;
+  var item=(menu[cat]||[]).find(function(i){return i.id===id;});
+  if(!item)return;
+  menuImgData=item.image||'';
+  document.getElementById('modal-title').textContent='Edit Item';
+  document.getElementById('f-name').value=item.name||'';
+  document.getElementById('f-desc').value=item.desc||'';
+  document.getElementById('f-price').value=item.price||'';
+  document.getElementById('f-tag').value=item.tag||'';
+  document.getElementById('f-image').value='';
+  var prev=document.getElementById('f-img-preview');
+  var clr=document.getElementById('f-img-clear');
+  if(item.image){prev.src=item.image;prev.style.display='block';clr.style.display='inline';}
+  else{prev.style.display='none';clr.style.display='none';}
+  document.getElementById('item-modal').classList.add('open');
+  document.getElementById('f-name').focus();
+}
+function closeModal(){document.getElementById('item-modal').classList.remove('open');}
+function closeModalOnOverlay(e){if(e.target===document.getElementById('item-modal'))closeModal();}
+function saveItem(){
+  var name=document.getElementById('f-name').value.trim();
+  if(!name){document.getElementById('f-name').focus();return;}
+  var item={id:editingId||uid(),name:name,desc:document.getElementById('f-desc').value.trim(),price:document.getElementById('f-price').value.trim()||'Market',tag:document.getElementById('f-tag').value.trim(),image:menuImgData};
+  if(!menu[editingCat])menu[editingCat]=[];
+  if(editingId){var idx=menu[editingCat].findIndex(function(i){return i.id===editingId;});if(idx>-1)menu[editingCat][idx]=item;}
+  else menu[editingCat].push(item);
+  saveMenuData();renderCat(editingCat);closeModal();
+}
+function deleteItem(cat,id){
+  if(!confirm('Delete this item?'))return;
+  menu[cat]=(menu[cat]||[]).filter(function(i){return i.id!==id;});
+  saveMenuData();renderCat(cat);
+}
+function handleMenuImg(e){
+  var file=e.target.files[0];if(!file)return;
+  resizeImage(file,400,function(data){
+    menuImgData=data;
+    document.getElementById('f-img-preview').src=data;
+    document.getElementById('f-img-preview').style.display='block';
+    document.getElementById('f-img-clear').style.display='inline';
+  });
+}
+function clearMenuImg(){menuImgData='';document.getElementById('f-image').value='';document.getElementById('f-img-preview').style.display='none';document.getElementById('f-img-clear').style.display='none';}
+
+// ── SITE EDITOR ──
+function showSection(id,link){
+  document.querySelectorAll('.editor-sidebar a').forEach(function(a){a.classList.remove('active');});
+  document.querySelectorAll('.editor-section').forEach(function(s){s.classList.remove('active');});
+  link.classList.add('active');
+  document.getElementById('sec-'+id).classList.add('active');
+  return false;
+}
+
+function loadSettingsToForm(){
+  var S=settings.site||{}, N=settings.nav||{}, H=settings.hero||{},
+      MQ=settings.marquee||{}, MS=settings.menuSection||{}, A=settings.about||{},
+      PS=settings.photoScroll||{}, F=settings.faq||{}, V=settings.visit||{}, FT=settings.footer||{};
+  // General
+  setVal('g-title',S.title); setVal('g-orderUrl',S.orderUrl);
+  setImgPreview('g-favicon-data','g-favicon-preview','g-favicon-clear',S.favicon);
+  // Nav
+  setImgPreview('nav-logo-data','nav-logo-preview','nav-logo-clear',N.logo);
+  setVal('nav-ctaText',N.ctaText); setVal('nav-ctaUrl',N.ctaUrl);
+  // Hero
+  setVal('hero-eyebrow',H.eyebrow); setVal('hero-title',H.title); setVal('hero-subtitle',H.subtitle);
+  setVal('hero-btn1Text',H.btn1Text); setVal('hero-btn1Url',H.btn1Url);
+  setVal('hero-btn2Text',H.btn2Text); setVal('hero-btn2Url',H.btn2Url);
+  setVal('hero-badgeYear',H.badgeYear); setVal('hero-badgeSince',H.badgeSince);
+  setImgPreview('hero-main-data','hero-main-preview','hero-main-clear',H.mainImage);
+  setImgPreview('hero-float-data','hero-float-preview','hero-float-clear',H.floatImage);
+  // Marquee
+  renderMarqueeList(MQ.items||[]);
+  // Menu section
+  setVal('ms-eyebrow',MS.eyebrow); setVal('ms-title',MS.title); setVal('ms-subtitle',MS.subtitle);
+  // About
+  setVal('ab-eyebrow',A.eyebrow); setVal('ab-title',A.title);
+  setVal('ab-para1',A.para1); setVal('ab-para2',A.para2);
+  setVal('ab-ctaText',A.ctaText); setVal('ab-ctaUrl',A.ctaUrl);
+  setImgPreview('ab-img1-data','ab-img1-preview','ab-img1-clear',A.img1);
+  setImgPreview('ab-img2-data','ab-img2-preview','ab-img2-clear',A.img2);
+  setImgPreview('ab-img3-data','ab-img3-preview','ab-img3-clear',A.img3);
+  // Photo scroll
+  setVal('ps-title',PS.title); setVal('ps-orderText',PS.orderText); setVal('ps-orderUrl',PS.orderUrl);
+  renderPhotoList(PS.photos||[]);
+  // FAQ
+  setVal('faq-eyebrow',F.eyebrow); setVal('faq-title',F.title); setVal('faq-subtitle',F.subtitle);
+  renderFaqList(F.items||[]);
+  // Visit
+  setVal('v-eyebrow',V.eyebrow); setVal('v-title',V.title); setVal('v-subtitle',V.subtitle);
+  setVal('v-orderUrl',V.orderUrl); setVal('v-mapsUrl',V.mapsUrl);
+  renderHoursList(V.hours||[]);
+  setVal('v-address',V.address); setVal('v-phone',V.phone); setVal('v-email',V.email);
+  // Footer
+  setImgPreview('ft-logo-data','ft-logo-preview','ft-logo-clear',FT.logo);
+  setVal('ft-tagline',FT.tagline); setVal('ft-address',FT.address);
+  setVal('ft-facebook',FT.facebookUrl);
+  setVal('ft-copyright',FT.copyright);
+}
+
+function setVal(id,v){var el=document.getElementById(id);if(el&&(v||v===0))el.value=v;}
+function setImgPreview(dataId,previewId,clearId,val){
+  document.getElementById(dataId).value=val||'';
+  var prev=document.getElementById(previewId);
+  var clr=document.getElementById(clearId);
+  if(val){prev.src=val;prev.style.display='block';if(clr)clr.style.display='inline';}
+  else{prev.style.display='none';if(clr)clr.style.display='none';}
+}
+
+// ── SAVE SECTIONS ──
+function saveSection(sec){
+  if(!settings[sec])settings[sec]={};
+  var S=settings;
+  if(sec==='general'){
+    S.site.title=getVal('g-title');
+    S.site.orderUrl=getVal('g-orderUrl');
+    S.site.favicon=getVal('g-favicon-data');
+  } else if(sec==='nav'){
+    S.nav.logo=getVal('nav-logo-data');
+    S.nav.ctaText=getVal('nav-ctaText');
+    S.nav.ctaUrl=getVal('nav-ctaUrl');
+  } else if(sec==='hero'){
+    S.hero.eyebrow=getVal('hero-eyebrow'); S.hero.title=getVal('hero-title');
+    S.hero.subtitle=getVal('hero-subtitle');
+    S.hero.btn1Text=getVal('hero-btn1Text'); S.hero.btn1Url=getVal('hero-btn1Url');
+    S.hero.btn2Text=getVal('hero-btn2Text'); S.hero.btn2Url=getVal('hero-btn2Url');
+    S.hero.badgeYear=getVal('hero-badgeYear'); S.hero.badgeSince=getVal('hero-badgeSince');
+    S.hero.mainImage=getVal('hero-main-data'); S.hero.floatImage=getVal('hero-float-data');
+  } else if(sec==='marquee'){
+    S.marquee.items=getMarqueeItems();
+  } else if(sec==='menuSection'){
+    S.menuSection.eyebrow=getVal('ms-eyebrow');
+    S.menuSection.title=getVal('ms-title');
+    S.menuSection.subtitle=getVal('ms-subtitle');
+  } else if(sec==='about'){
+    S.about.eyebrow=getVal('ab-eyebrow'); S.about.title=getVal('ab-title');
+    S.about.para1=getVal('ab-para1'); S.about.para2=getVal('ab-para2');
+    S.about.ctaText=getVal('ab-ctaText'); S.about.ctaUrl=getVal('ab-ctaUrl');
+    S.about.img1=getVal('ab-img1-data'); S.about.img2=getVal('ab-img2-data'); S.about.img3=getVal('ab-img3-data');
+  } else if(sec==='photos'){
+    S.photoScroll.title=getVal('ps-title');
+    S.photoScroll.orderText=getVal('ps-orderText'); S.photoScroll.orderUrl=getVal('ps-orderUrl');
+    S.photoScroll.photos=getPhotoItems();
+  } else if(sec==='faq'){
+    S.faq.eyebrow=getVal('faq-eyebrow'); S.faq.title=getVal('faq-title');
+    S.faq.subtitle=getVal('faq-subtitle');
+    S.faq.items=getFaqItems();
+  } else if(sec==='visit'){
+    S.visit.eyebrow=getVal('v-eyebrow'); S.visit.title=getVal('v-title'); S.visit.subtitle=getVal('v-subtitle');
+    S.visit.orderUrl=getVal('v-orderUrl'); S.visit.mapsUrl=getVal('v-mapsUrl');
+    S.visit.hours=getHoursItems();
+    S.visit.address=getVal('v-address'); S.visit.phone=getVal('v-phone'); S.visit.email=getVal('v-email');
+  } else if(sec==='footer'){
+    S.footer.logo=getVal('ft-logo-data'); S.footer.tagline=getVal('ft-tagline');
+    S.footer.address=getVal('ft-address');
+    S.footer.facebookUrl=getVal('ft-facebook');
+    S.footer.copyright=getVal('ft-copyright');
+  }
+  saveSettingsData();
+}
+function getVal(id){var el=document.getElementById(id);return el?el.value:'';}
+
+// ── ARRAY FIELDS ──
+// Marquee
+function renderMarqueeList(items){
+  var list=document.getElementById('marquee-list');
+  list.innerHTML=items.map(function(item,i){
+    return '<div class="array-item"><div class="array-item-fields"><input type="text" value="'+esc(item)+'" placeholder="Marquee text..."/></div><button class="btn-remove" onclick="removeArrayItem(this)">×</button></div>';
+  }).join('');
+}
+function addMarqueeItem(){
+  var list=document.getElementById('marquee-list');
+  var div=document.createElement('div');div.className='array-item';
+  div.innerHTML='<div class="array-item-fields"><input type="text" placeholder="Marquee text..."/></div><button class="btn-remove" onclick="removeArrayItem(this)">×</button>';
+  list.appendChild(div);div.querySelector('input').focus();
+}
+function getMarqueeItems(){
+  return Array.from(document.querySelectorAll('#marquee-list .array-item input')).map(function(i){return i.value.trim();}).filter(Boolean);
+}
+
+// Hours
+function renderHoursList(hours){
+  var list=document.getElementById('hours-list');
+  list.innerHTML=hours.map(function(h){
+    return '<div class="array-item"><div class="array-item-fields"><input type="text" value="'+esc(h.day)+'" placeholder="Mon" style="max-width:120px"/><input type="text" class="wide" value="'+esc(h.time)+'" placeholder="11am – 5pm"/></div><button class="btn-remove" onclick="removeArrayItem(this)">×</button></div>';
+  }).join('');
+}
+function addHoursRow(){
+  var list=document.getElementById('hours-list');
+  var div=document.createElement('div');div.className='array-item';
+  div.innerHTML='<div class="array-item-fields"><input type="text" placeholder="Mon" style="max-width:120px"/><input type="text" class="wide" placeholder="11am – 5pm"/></div><button class="btn-remove" onclick="removeArrayItem(this)">×</button>';
+  list.appendChild(div);div.querySelector('input').focus();
+}
+function getHoursItems(){
+  return Array.from(document.querySelectorAll('#hours-list .array-item')).map(function(row){
+    var ins=row.querySelectorAll('input');
+    return{day:ins[0].value.trim(),time:ins[1].value.trim()};
+  }).filter(function(h){return h.day||h.time;});
+}
+
+// FAQ
+function renderFaqList(items){
+  var list=document.getElementById('faq-list');
+  list.innerHTML=items.map(function(item){
+    return '<div class="array-item" style="flex-direction:column;align-items:stretch;gap:8px"><div style="display:flex;gap:8px;align-items:center"><div class="array-item-fields" style="flex:1"><input type="text" value="'+esc(item.q)+'" placeholder="Question..." class="wide"/></div><button class="btn-remove" onclick="removeArrayItem(this.closest(\'.array-item\'))">×</button></div><div><input type="text" value="'+esc(item.a)+'" placeholder="Answer..." style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:\'Lato\',sans-serif;color:var(--dark);background:var(--bg);outline:none"/></div></div>';
+  }).join('');
+}
+function addFaqItem(){
+  var list=document.getElementById('faq-list');
+  var div=document.createElement('div');div.className='array-item';div.style.cssText='flex-direction:column;align-items:stretch;gap:8px';
+  div.innerHTML='<div style="display:flex;gap:8px;align-items:center"><div class="array-item-fields" style="flex:1"><input type="text" placeholder="Question..." class="wide"/></div><button class="btn-remove" onclick="removeArrayItem(this.closest(\'.array-item\'))">×</button></div><div><input type="text" placeholder="Answer..." style="width:100%;padding:7px 10px;border:1.5px solid var(--border);border-radius:6px;font-size:13px;font-family:\'Lato\',sans-serif;color:var(--dark);background:var(--bg);outline:none"/></div>';
+  list.appendChild(div);div.querySelector('input').focus();
+}
+function getFaqItems(){
+  return Array.from(document.querySelectorAll('#faq-list .array-item')).map(function(row){
+    var ins=row.querySelectorAll('input');
+    return{q:ins[0].value.trim(),a:ins[1]?ins[1].value.trim():''};
+  }).filter(function(f){return f.q;});
+}
+
+// Photos
+function renderPhotoList(photos){
+  var list=document.getElementById('photos-list');
+  list.innerHTML=photos.map(function(p,i){
+    var img=p.image?'<img src="'+p.image+'" style="width:52px;height:52px;object-fit:cover;border-radius:6px;flex-shrink:0">':'<div style="width:52px;height:52px;border-radius:6px;background:var(--warm);border:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px">📷</div>';
+    return '<div class="array-item" data-photo-idx="'+i+'" style="align-items:center">'+img+'<input type="hidden" class="photo-img-data" value="'+esc(p.image||'')+'"/><div class="array-item-fields"><input type="text" value="'+esc(p.category)+'" placeholder="Category" style="max-width:140px"/><input type="text" class="wide" value="'+esc(p.name)+'" placeholder="Dish name"/></div><label class="btn-add-row" style="cursor:pointer;padding:6px 12px">📷<input type="file" accept="image/*" style="display:none" onchange="handlePhotoUpload(event,this)"/></label><button class="btn-remove" onclick="removeArrayItem(this)">×</button></div>';
+  }).join('');
+}
+function addPhotoItem(){
+  var list=document.getElementById('photos-list');
+  var div=document.createElement('div');div.className='array-item';div.style.cssText='align-items:center';
+  div.innerHTML='<div style="width:52px;height:52px;border-radius:6px;background:var(--warm);border:1px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px" class="photo-img-thumb">📷</div><input type="hidden" class="photo-img-data" value=""/><div class="array-item-fields"><input type="text" placeholder="Category" style="max-width:140px"/><input type="text" class="wide" placeholder="Dish name"/></div><label class="btn-add-row" style="cursor:pointer;padding:6px 12px">📷<input type="file" accept="image/*" style="display:none" onchange="handlePhotoUpload(event,this)"/></label><button class="btn-remove" onclick="removeArrayItem(this)">×</button>';
+  list.appendChild(div);
+}
+function handlePhotoUpload(e,fileInput){
+  var file=e.target.files[0];if(!file)return;
+  var row=fileInput.closest('.array-item');
+  resizeImage(file,600,function(data){
+    row.querySelector('.photo-img-data').value=data;
+    var thumb=row.querySelector('.photo-img-thumb')||row.querySelector('img');
+    if(thumb&&thumb.tagName==='IMG'){thumb.src=data;}
+    else{var img=document.createElement('img');img.src=data;img.style.cssText='width:52px;height:52px;object-fit:cover;border-radius:6px;flex-shrink:0';if(thumb)row.replaceChild(img,thumb);}
+  });
+}
+function getPhotoItems(){
+  return Array.from(document.querySelectorAll('#photos-list .array-item')).map(function(row){
+    var ins=row.querySelectorAll('input[type=text]');
+    return{image:row.querySelector('.photo-img-data').value,category:ins[0].value.trim(),name:ins[1]?ins[1].value.trim():''};
+  }).filter(function(p){return p.name||p.image;});
+}
+
+function removeArrayItem(el){
+  var item=el.closest?el.closest('.array-item'):el;
+  if(item)item.remove();
+}
+
+// ── IMAGE HANDLING ──
+function handleImgUpload(e,dataId,previewId){
+  var file=e.target.files[0];if(!file)return;
+  resizeImage(file,600,function(data){
+    document.getElementById(dataId).value=data;
+    var prev=document.getElementById(previewId);
+    prev.src=data;prev.style.display='block';
+    var clearId=dataId.replace('-data','-clear');
+    var clr=document.getElementById(clearId);
+    if(clr)clr.style.display='inline';
+  });
+}
+function clearImg(dataId,previewId,clearId){
+  document.getElementById(dataId).value='';
+  var prev=document.getElementById(previewId);
+  prev.src='';prev.style.display='none';
+  var clr=document.getElementById(clearId);
+  if(clr)clr.style.display='none';
+}
+function resizeImage(file,maxSize,cb){
+  var reader=new FileReader();
+  reader.onload=function(ev){
+    var img=new Image();
+    img.onload=function(){
+      var w=img.width,h=img.height;
+      if(w>h){if(w>maxSize){h=Math.round(h*maxSize/w);w=maxSize;}}
+      else{if(h>maxSize){w=Math.round(w*maxSize/h);h=maxSize;}}
+      var canvas=document.createElement('canvas');
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      cb(canvas.toDataURL('image/jpeg',0.82));
+    };
+    img.src=ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+// ── UTILS ──
+function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function showToast(){
+  var t=document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(function(){t.classList.remove('show');},2400);
+}
+
+// ── INIT ──
+if(sessionStorage.getItem('meraki_admin')==='1'){showAdmin();}
+// Init mode display
+document.getElementById('mode-editor').style.display='none';
+</script>
+</body>
+</html>
